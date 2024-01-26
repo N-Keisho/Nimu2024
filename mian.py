@@ -10,12 +10,11 @@ if __name__ == "__main__":
     makeGtableImage = MakeGtableImage(OUTPUT_DIR_PATH)
     
     # 遷移集合の指定
-    makeGtableImage.CURRENT_MOVE_RESTRICTIONS = makeGtableImage.MOVE_RESTRICTIONS_LIST[0]
+    move_restrictions = makeGtableImage.MOVE_RESTRICTIONS_LIST[0]
 
     # 画像の生成
-    makeGtableImage.saveGTableImage()
+    makeGtableImage.saveGTableImage(move_restrictions)
 
     # すべての画像の生成
     # for move_restrictions in makeGtableImage.MOVE_RESTRICTIONS_LIST:
-    #     makeGtableImage.CURRENT_MOVE_RESTRICTIONS = move_restrictions
-    #     makeGtableImage.saveGTableImage()
+    #     makeGtableImage.saveGTableImage(move_restrictions)

@@ -16,7 +16,6 @@ class MakeGtableImage:
         self.MIN_NUM_OF_MOVE_RESTRICTIONS = MIN_NUM_OF_MOVE_RESTRICTIONS # 移動条件数の最小値
         self.MAX_NUM_OF_MOVE_RESTRICTIONS = MAX_NUM_OF_MOVE_RESTRICTIONS # 移動条件数の最大値
         self.GRUNDYNUM_MAX = -1 # グランディ数の最大値
-        self.CURRENT_MOVE_RESTRICTIONS = [] # 演算時に使用している遷移集合
         self.makeAllCombinations() # すべての取り方の生成
         self.makeMoveRestrictions() # 条件に沿ったすべての遷移集合の生成
 
@@ -103,11 +102,11 @@ class MakeGtableImage:
 
     ### --- グランディテーブル関連 --- ###
     #--- グランディテーブルの生成 ---
-    def fillGrundyTable(self):
+    def fillGrundyTable(self, move_restrictions):
 
         # もし遷移集合が設定されていない場合はエラーを出力して終了
-        if len(self.CURRENT_MOVE_RESTRICTIONS) == 0:
-            print("Warning in func:fillGrundyTable, CURRENT_MOVE_RESTRICTIONS is not set")
+        if len(move_restrictions) == 0:
+            print("Warning in func:fillGrundyTable, move_restrictions is not set")
             return
         
         self.GRUNDY_TABLE = np.full((self.N_SIZE, self.M_SIZE), -1) #初期化
@@ -118,7 +117,7 @@ class MakeGtableImage:
         for n in range(self.N_SIZE): # nは山1の石の数
             for m in range(self.M_SIZE): # mは山2の石の数
                 next_GrundyNum_list = [] # 次の状態のグランディ数のリスト
-                for move in self.CURRENT_MOVE_RESTRICTIONS: # 遷移集合の各要素について
+                for move in move_restrictions: # 遷移集合の各要素について
                     next_stone_num = np.array([n, m]) - np.array([move[0], move[1]]) # 次の状態の石の数
                     if 0 <= next_stone_num[0] and 0 <= next_stone_num[1]: # 両方が0以上なら
                         next_GrundyNum_list.append(self.GRUNDY_TABLE[next_stone_num[0]][next_stone_num[1]]) # グランディテーブルからグランディ数を取得
@@ -128,9 +127,11 @@ class MakeGtableImage:
                     self.GRUNDYNUM_MAX = self.GRUNDY_TABLE[n][m]
                 # print("n:", n, "m:", m, ",", self.GRUNDY_TABLE[n][m])
 
+
     #--- 数列liに含まれない最小非負整数を返す ---
     def mex(self, li):
         return min( set([i for i in range(0, max(li+[-1])+3)])-set(li) )
+
 
     #--- グランディテーブルの表示 ---
     def showGrandyTable(self):
@@ -144,15 +145,15 @@ class MakeGtableImage:
 
     ### --- 画像化関連 --- ###
     #--- 与えられた遷移集合のグランディテーブルの画像化 ---
-    def saveGTableImage(self, ave_filter=False, filter_size=3, show_output_file_path=True, return_image_array=False, image_fmt="bmp"):
+    def saveGTableImage(self, move_restrictions, ave_filter=False, filter_size=3, show_output_file_path=True, return_image_array=False, image_fmt="bmp"):
 
         # もし遷移集合が設定されていない場合はエラーを出力して終了
-        if len(self.CURRENT_MOVE_RESTRICTIONS) == 0:
-            print("\nWarning in func:fillGrundyTable, CURRENT_MOVE_RESTRICTIONS is not set")
+        if len(move_restrictions) == 0:
+            print("\nWarning in func:fillGrundyTable, move_restrictions is not set")
             return
         
         # グランディテーブルの生成
-        self.fillGrundyTable()
+        self.fillGrundyTable(move_restrictions)
 
         print("\n--- グランディテーブルの画像化 saveGTable2Image() ---")
 
@@ -181,7 +182,7 @@ class MakeGtableImage:
 
         # ファイルパスとファイル名を作成
         file_name = ""
-        for move in self.CURRENT_MOVE_RESTRICTIONS:
+        for move in move_restrictions:
             file_name += str(move[0]) + str( move[1]) + "_"
             #file_name += str(move[0]) + str( move[1]) + "_"
         file_name += filter_name
