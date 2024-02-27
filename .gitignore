@@ -1,3 +1,7 @@
 # BEGIN: Nimu2024/.gitignore
-output_images/3_restrictions
+output_images/3_restrictions/Ohter
+output_images/3_restrictions/2
+output_images/3_restrictions/3
+output_images/3_restrictions/4
+output_images/3_restrictions/5
 # END: .gitignore
