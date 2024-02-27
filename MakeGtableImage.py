@@ -72,6 +72,15 @@ class MakeGtableImage:
 
 
     ## --- メソッド --- ##
+    def main(self, ave_filter=False, filter_size=3, show_output_file_path=True, return_image_array=False, image_fmt="bmp"):
+        print("## --- MakeGtableImage start--- ##")
+        for move_restrictions in self.MOVE_RESTRICTIONS_LIST:
+            for move in move_restrictions:
+                self.saveGTableImage(move, ave_filter=False, show_output_file_path=show_output_file_path, return_image_array=return_image_array, image_fmt=image_fmt)
+                if ave_filter:
+                    self.saveGTableImage(move, ave_filter=True, filter_size=filter_size, show_output_file_path=show_output_file_path, return_image_array=return_image_array, image_fmt=image_fmt)
+        print("## --- MakeGtableImage end --- ##")
+
     
     ### --- 遷移集合関連 --- ###
     #--- すべての取り方の生成 ---
@@ -83,21 +92,22 @@ class MakeGtableImage:
         if (0, 0) in res:
             res.remove((0, 0))
 
-        print("\n--- すべての取り方の生成 makeAllCombinations() ---")
+        # print("\n--- すべての取り方の生成 makeAllCombinations() ---")
         # print("取ることのできる最小の石の個数は", MIN_NUM_OF_MOVE, "~", MAX_NUM_OF_MOVE, "です")
         # print("移動条件数は", MIN_NUM_OF_MOVE_RESTRICTIONS, "~", MAX_NUM_OF_MOVE_RESTRICTIONS, "です")
-        print("すべての取り方 :", res)
+        # print("すべての取り方 :", res)
         self.ALL_COMBINATIONS = res
     
 
     #--- 条件に沿ったすべての遷移集合の生成 ---
     def makeMoveRestrictions(self):
-        print("\n--- 遷移集合の生成 makeMoveRestrictions() ---")
+        # print("\n--- 遷移集合の生成 makeMoveRestrictions() ---")
+        self.MOVE_RESTRICTIONS_LIST = [] # 遷移集合のリスト
         for num_of_move_restrictions in range(self.MIN_NUM_OF_MOVE_RESTRICTIONS, self.MAX_NUM_OF_MOVE_RESTRICTIONS + 1):
             move_restrictions_list = list(itertools.combinations(self.ALL_COMBINATIONS, num_of_move_restrictions)) #コンビネーション
             #move_restrictions_list = list(itertools.product(li, repeat=num_of_move_restrictions)) #重複ありコンビネーション
-            print("遷移集合の要素数が", num_of_move_restrictions, "の時, 生成される画像は", len(move_restrictions_list), "個")
-        self.MOVE_RESTRICTIONS_LIST = move_restrictions_list
+            # print("遷移集合の要素数が", num_of_move_restrictions, "の時, 生成される画像は", len(move_restrictions_list), "個")
+            self.MOVE_RESTRICTIONS_LIST.append(move_restrictions_list)
 
 
     ### --- グランディテーブル関連 --- ###
@@ -112,7 +122,7 @@ class MakeGtableImage:
         self.GRUNDY_TABLE = np.full((self.N_SIZE, self.M_SIZE), -1) #初期化
         self.GRUNDYNUM_MAX = -1
         
-        print("\n--- グランディ数のテーブルの生成 fillGrundyTable() ---")
+        # print("\n--- グランディ数のテーブルの生成 fillGrundyTable() ---")
 
         for n in range(self.N_SIZE): # nは山1の石の数
             for m in range(self.M_SIZE): # mは山2の石の数
@@ -155,12 +165,9 @@ class MakeGtableImage:
         # グランディテーブルの生成
         self.fillGrundyTable(move_restrictions)
 
-        print("\n--- グランディテーブルの画像化 saveGTable2Image() ---")
+        # print("\n--- グランディテーブルの画像化 saveGTable2Image() ---")
 
-        # 画像を出力するディレクトリが存在しない場合は作成する
-        if not os.path.isdir(self.OUTPUT_DIR_PATH):
-            os.makedirs(self.OUTPUT_DIR_PATH)
-            print("ディレクトリを作成しました")
+        
         
         # 0 ~ 255の範囲で正規化
         if self.GRUNDYNUM_MAX == 0:
@@ -174,27 +181,42 @@ class MakeGtableImage:
         filter_name = ""
         # もし画像をぼかすするなら以下を実行
         if ave_filter == True:
-            filter_name += "_" + "ave_filter"
+            filter_name += "_aveFilter"
             output_table = self.myConvolve2d(output_table,filter_size)
         
         # uint8にキャストして出力イメージ用フォーマットにする
         output_img = Image.fromarray(output_table.astype(np.uint8))
 
+
+        # 画像を出力するディレクトリが存在しない場合は作成する
+        if not os.path.isdir(self.OUTPUT_DIR_PATH):
+            os.makedirs(self.OUTPUT_DIR_PATH)
+            print(self.OUTPUT_DIR_PATH + "ディレクトリを作成しました")
+
+        # 画像を出力するディレクトリが存在しない場合は作成する
+        saveFileDir = self.OUTPUT_DIR_PATH + '/' + str(len(move_restrictions)) + '_restrictions' + filter_name;
+        if not os.path.isdir(saveFileDir):
+            os.makedirs(saveFileDir)
+            print(saveFileDir + "ディレクトリを作成しました")
+
         # ファイルパスとファイル名を作成
         file_name = ""
-        for move in move_restrictions:
-            file_name += str(move[0]) + str( move[1]) + "_"
-            #file_name += str(move[0]) + str( move[1]) + "_"
+        for i, move in enumerate(move_restrictions):
+            if i != 0:
+                file_name += '_'
+            file_name += str(move[0]) + str( move[1])
         file_name += filter_name
 
         #最終的なファイル名
-        full_file_path = self.OUTPUT_DIR_PATH + file_name + "." + image_fmt 
+        full_file_path = saveFileDir + '/' + file_name + "." + image_fmt 
+
+
 
         if show_output_file_path:
             print(full_file_path)
 
         output_img.save(full_file_path)
-        print("画像を保存しました")
+        # print("画像を保存しました")
 
         if return_image_array:
             return output_table

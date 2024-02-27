@@ -7,14 +7,7 @@ if __name__ == "__main__":
     OUTPUT_DIR_PATH = "./output_images/"
     
     # インスタンスの生成
-    makeGtableImage = MakeGtableImage(OUTPUT_DIR_PATH)
+    makeGtableImage = MakeGtableImage(OUTPUT_DIR_PATH, MIN_NUM_OF_MOVE_RESTRICTIONS=3, MAX_NUM_OF_MOVE_RESTRICTIONS=3)
     
-    # 遷移集合の指定
-    move_restrictions = makeGtableImage.MOVE_RESTRICTIONS_LIST[0]
-
-    # 画像の生成
-    makeGtableImage.saveGTableImage(move_restrictions)
-
-    # すべての画像の生成
-    # for move_restrictions in makeGtableImage.MOVE_RESTRICTIONS_LIST:
-    #     makeGtableImage.saveGTableImage(move_restrictions)
+    # メイン処理
+    makeGtableImage.main()
