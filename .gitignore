@@ -1,3 +1,4 @@
 # BEGIN: Nimu2024/.gitignore
-output_images/
+output_images/2_restrictions
+output_images/3_restrictions
 # END: .gitignore
